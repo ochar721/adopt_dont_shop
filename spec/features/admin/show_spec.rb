@@ -11,15 +11,16 @@ RSpec.describe 'admin applications show spec' do
     @pet3 = @shelter3.pets.create(adoptable: true, age: 3, breed: 'maincoon', name: 'george', shelter_id: @shelter1.id)
 
     @olivia = Application.create(name: 'Olivia Charles' ,address: '2390 toad holler rd ', city: 'montrose', state: 'PA', zip_code: 12345, description: 'Love cats', status: 'Pending')
+    @kk = Application.create(name: 'Ksenyia' ,address: '2390 toad holler rd ', city: 'montrose', state: 'PA', zip_code: 12345, description: 'Love cats', status: 'Pending')
 
     PetApplication.create(pet_id: @pet1.id, application_id: @olivia.id, status: 'Pending')
     PetApplication.create(pet_id: @pet2.id, application_id: @olivia.id, status: 'Pending')
+    PetApplication.create(pet_id: @pet1.id, application_id: @kk.id, status: 'Pending')
+    visit "/admin/applications/#{@olivia.id}"
   end
 
 
   it 'for every pet there is a button to approve application for a specific pet.' do
-    visit "/admin/applications/#{@olivia.id}"
-
     expect(page).to have_button("Approve #{@pet1.name} for Adoption")
 
     click_button "Approve #{@pet1.name} for Adoption"
@@ -30,8 +31,6 @@ RSpec.describe 'admin applications show spec' do
   end
 
   it 'for every pet there is a button to reject application for a specific pet.' do
-    visit "/admin/applications/#{@olivia.id}"
-
     expect(page).to have_button("Reject Application for #{@pet1.name}")
 
     click_button "Reject Application for #{@pet1.name}"
@@ -39,5 +38,19 @@ RSpec.describe 'admin applications show spec' do
     expect(current_path).to eq("/admin/applications/#{@olivia.id}")
     expect(page).to have_content("This application has been rejected")
     expect(page).to_not have_button("Reject Application for #{@pet1.name}")
+  end
+
+
+  it 'One application is approved or denyed it does not affect the other application' do
+
+    expect(page).to have_button("Reject Application for #{@pet1.name}")
+
+    click_button "Reject Application for #{@pet1.name}"
+
+    expect(page).to_not have_button("Reject Application for #{@pet1.name}")
+
+    visit "/admin/applications/#{@kk.id}"
+
+    expect(page).to have_button("Reject Application for #{@pet1.name}")
   end
 end
